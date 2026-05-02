@@ -7,6 +7,8 @@ node_modules/
 # Env and secrets
 .env
 .env.*
+!.env.example
+!/apps/web/.env.example
 
 # Next.js / build
 .next/
