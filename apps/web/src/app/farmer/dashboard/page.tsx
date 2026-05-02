@@ -2,7 +2,7 @@ import Link from "next/link";
 import { desc, eq, inArray } from "drizzle-orm";
 import { farms, inquiries } from "@schema";
 import { requireFarmer } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 
 export default async function FarmerDashboardPage() {
   const farmer = await requireFarmer();
@@ -10,7 +10,19 @@ export default async function FarmerDashboardPage() {
     throw new Error("Unexpected unauthenticated farmer page render.");
   }
 
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16">
+        <h1 className="text-xl font-semibold text-emerald-950">Database not configured</h1>
+        <p className="mt-2 text-sm text-neutral-700">
+          Add <code className="rounded bg-neutral-100 px-1">DATABASE_URL</code> in your hosting environment so the
+          farmer portal can load listings and inquiries.
+        </p>
+      </div>
+    );
+  }
+
   const myFarms = await db
     .select()
     .from(farms)

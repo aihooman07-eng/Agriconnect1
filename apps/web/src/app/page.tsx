@@ -51,6 +51,10 @@ export default function Home() {
           Farmer / Coordinator sign-in
         </Link>
       </section>
+      <p className="max-w-2xl text-sm text-neutral-700">
+        <strong>Visits are not auto-booked yet.</strong> Use Discover to find a live farm, open its profile, and send an
+        email-based inquiry — the host coordinates dates with you directly.
+      </p>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { coordinators, emailOtps, farmers, sessions } from "@schema";
 import { SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/lib/constants";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import { hashOtp, hashSessionToken, newSessionToken } from "@/lib/otp";
 import { slidingWindowHit, clientIpFromHeaders } from "@/lib/rate-limit";
 
@@ -45,7 +45,11 @@ export async function POST(req: NextRequest) {
   const submitted = parsed.data.code;
   const expectedHash = hashOtp(submitted, otpPepper);
 
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) {
+    return NextResponse.json({ error: "Database unavailable — configure DATABASE_URL" }, { status: 503 });
+  }
+
   const otpRow = (
     await db
       .select({ id: emailOtps.id })

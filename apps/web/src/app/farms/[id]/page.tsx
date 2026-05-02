@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { farms } from "@schema";
 import { getSessionPrincipal } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import { InquiryForm } from "./inquiry-form";
 
 export const runtime = "nodejs";
@@ -13,8 +13,23 @@ type PageProps = { params: Promise<{ id: string }> };
 export default async function FarmDetailPage(props: PageProps) {
   const { id } = await props.params;
 
-  const db = getDb();
+  const db = tryGetDb();
   const principal = await getSessionPrincipal();
+
+  if (!db) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16">
+        <h1 className="text-xl font-semibold text-emerald-950">Database not configured</h1>
+        <p className="mt-2 text-sm text-neutral-700">
+          This preview cannot load farm profiles until <code className="rounded bg-neutral-100 px-1">DATABASE_URL</code>{" "}
+          is set in the deployment environment (e.g. Vercel project settings).
+        </p>
+        <Link href="/discover" className="mt-6 inline-flex text-emerald-800 underline">
+          Back to Discover
+        </Link>
+      </div>
+    );
+  }
 
   const [row] = await db.select().from(farms).where(eq(farms.id, id)).limit(1);
 

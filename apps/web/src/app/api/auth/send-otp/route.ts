@@ -5,7 +5,7 @@ import { z } from "zod";
 import { emailOtps } from "@schema";
 import { OTP_TTL_MS } from "@/lib/constants";
 import { sendFarmerLoginOtpEmail } from "@/lib/email";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import { hashOtp, randomSixDigitCode } from "@/lib/otp";
 import { clientIpFromHeaders, slidingWindowHit } from "@/lib/rate-limit";
 
@@ -47,8 +47,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
   }
 
+  const db = tryGetDb();
+  if (!db) {
+    return NextResponse.json({ error: "Database unavailable — configure DATABASE_URL" }, { status: 503 });
+  }
+
   const code = randomSixDigitCode();
-  const db = getDb();
 
   // One-time login link style: newest replaces prior unused codes for the same inbox.
   await db.delete(emailOtps).where(eq(emailOtps.email, email));

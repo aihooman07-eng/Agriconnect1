@@ -2,14 +2,16 @@ import { and, eq, gt } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { coordinators, farmers, sessions } from "@schema";
 import { SESSION_COOKIE } from "./constants";
-import { getDb } from "./db";
+import { tryGetDb } from "./db";
 import { hashSessionToken } from "./otp";
 
 async function lookupSession(rawToken: string | undefined) {
   if (!rawToken?.trim()) return null;
 
+  const db = tryGetDb();
+  if (!db) return null;
+
   const tokenHash = hashSessionToken(rawToken);
-  const db = getDb();
   const rows = await db
     .select({
       expiresAt: sessions.expiresAt,

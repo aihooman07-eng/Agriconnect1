@@ -1,11 +1,23 @@
 import { eq } from "drizzle-orm";
 import { farmers, farms } from "@schema";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import type { PendingFarmCard } from "./moderation-row";
 import { ModerationFarmCard } from "./moderation-row";
 
 export default async function CoordinatorQueuePage() {
-  const db = getDb();
+  const db = tryGetDb();
+
+  if (!db) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16">
+        <h1 className="text-xl font-semibold text-emerald-950">Database not configured</h1>
+        <p className="mt-2 text-sm text-neutral-700">
+          Set <code className="rounded bg-neutral-100 px-1">DATABASE_URL</code> on Vercel so the moderation queue can
+          load submissions.
+        </p>
+      </div>
+    );
+  }
 
   const rows = await db
     .select({

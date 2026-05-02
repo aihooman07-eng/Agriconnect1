@@ -1,6 +1,6 @@
 import { and, asc, eq, gte, lte, sql } from "drizzle-orm";
 import { farms } from "@schema";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import { MALKANGIRI_BOX } from "@/lib/malkangiri";
 
 export type DiscoveryFilters = {
@@ -14,7 +14,8 @@ export type DiscoveryFilters = {
 };
 
 export async function fetchLiveDiscoveryFarms(filters: DiscoveryFilters) {
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) return [];
 
   const whereParts = [
     eq(farms.status, "live"),

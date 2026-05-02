@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { farmers, farms } from "@schema";
 import { requireCoordinator } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import { sendFarmRejectedEmail } from "@/lib/email";
 
 const moderateSchema = z.discriminatedUnion("decision", [
@@ -43,7 +43,10 @@ export async function POST(req: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) {
+    return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
+  }
 
   const rows = await db
     .select({

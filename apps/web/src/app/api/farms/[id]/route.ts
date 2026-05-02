@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { farms } from "@schema";
 import { getSessionPrincipal } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 
 const patchFarmSchema = z
   .object({
@@ -32,7 +32,11 @@ export async function GET(_req: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) {
+    return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
+  }
+
   const principal = await getSessionPrincipal();
 
   const [row] = await db
@@ -79,7 +83,10 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) {
+    return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
+  }
 
   const [existing] = await db
     .select()

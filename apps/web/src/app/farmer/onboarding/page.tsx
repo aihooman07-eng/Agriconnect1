@@ -2,7 +2,7 @@ import { eq, and } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { farms } from "@schema";
 import { requireFarmer } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import { OnboardingForm } from "./onboarding-form";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -24,7 +24,11 @@ export default async function FarmerOnboardingPage(props: {
     return <OnboardingForm mode="create" />;
   }
 
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) {
+    redirect("/farmer/dashboard");
+  }
+
   const [row] = await db
     .select()
     .from(farms)

@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { farmers, farms, inquiries } from "@schema";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import {
   sendFarmerNewInquiryEmail,
   sendVisitorInquiryConfirmation,
@@ -70,7 +70,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) {
+    return NextResponse.json(
+      { error: "Database unavailable — configure DATABASE_URL" },
+      { status: 503 },
+    );
+  }
 
   const farmRows = await db
     .select({

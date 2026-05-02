@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { farms } from "@schema";
 import { getSessionPrincipal } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { tryGetDb } from "@/lib/db";
 import { fetchLiveDiscoveryFarms } from "@/lib/live-farms";
 
 const createFarmSchema = z.object({
@@ -51,6 +51,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const dbOrNull = tryGetDb();
+  if (!dbOrNull) {
+    return NextResponse.json(
+      { error: "Database unavailable — configure DATABASE_URL" },
+      { status: 503 },
+    );
+  }
+
   let json: unknown;
   try {
     json = await req.json();
@@ -64,7 +72,7 @@ export async function POST(req: NextRequest) {
   }
 
   const data = parsed.data;
-  const db = getDb();
+  const db = dbOrNull;
 
   const [row] = await db
     .insert(farms)
