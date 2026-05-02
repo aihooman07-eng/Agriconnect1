@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Env and secrets
+.env
+.env.*
+
+# Next.js / build
+.next/
+out/
+dist/
+build/
+
+# Logs and debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS / editor
+Thumbs.db
+.DS_Store
+
+# Test / coverage
+coverage/
+.vercel/
